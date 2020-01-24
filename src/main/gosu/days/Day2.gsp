@@ -1,7 +1,7 @@
 uses java.io.FileInputStream
 uses java.io.File
 uses gw.util.Pair
-uses scratch.IntCodeComputer
+uses scratch.IntcodeComputer
 
 /**
  * Day 2: 1202 Program Alarm
@@ -35,7 +35,7 @@ var input =
   
 var program = input.split(",").map(\text -> Integer.parseInt(text.trim()))
 
-var computer = new IntCodeComputer()
+var computer = new IntcodeComputer()
 computer.Debug = false
 
 // setup
@@ -50,7 +50,7 @@ var outcome = computer.peek(0)
 print("\"1202 program alarm\" execution result = ${outcome}")
 
 var target = 19690720
-    target = 19690720
+
 var solutions = new ArrayList<Pair<Integer,Integer>>()
 for(X in 0..99) {
   for(Y in 0..99) {

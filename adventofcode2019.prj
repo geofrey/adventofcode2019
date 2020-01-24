@@ -1,8 +1,9 @@
 #Gosu Experiment
-#Fri Jan 24 09:32:08 EST 2020
+#Fri Jan 24 17:22:15 EST 2020
 Name=adventofcode2019
-Recent.Program=scratch.RunMe
-Tab.Active=src/main/gosu/days/Day4.gsp
+Recent.Program=days.Day5
+Tab.Active=src/main/gosu/days/Day5.gsp
 Classpath.Entry0=src/main/gosu
-Tab.Open.B=src/main/gosu/scratch/RunMe.gsp
-Tab.Open.A=src/main/gosu/days/Day4.gsp
+Tab.Open.C=src/main/gosu/scratch/IntcodeComputer.gs
+Tab.Open.B=src/main/gosu/days/Day2.gsp
+Tab.Open.A=src/main/gosu/days/Day5.gsp
