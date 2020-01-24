@@ -1,0 +1,10 @@
+#Gosu Experiment
+#Thu Jan 23 17:55:44 EST 2020
+Name=adventofcode2019
+Recent.Program=days.Day3
+Tab.Open.D=src/main/gosu/days/Day4.gsp
+Tab.Active=src/main/gosu/days/Day4.gsp
+Classpath.Entry0=src/main/gosu
+Tab.Open.C=src/main/gosu/days/Day1.gsp
+Tab.Open.B=src/main/gosu/scratch/Util.gs
+Tab.Open.A=src/main/gosu/days/Day3.gsp
