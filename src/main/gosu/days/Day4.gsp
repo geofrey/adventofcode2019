@@ -7,6 +7,10 @@
  * - monotonic nondecreasing; consecutive digits do not get smaller
  * 
  * Challenge: How many possible passwords meet these requirements?
+ * 
+ * Challenge part 2
+ * - the two adjacent identical digits don't count if they are part of a longer run
+ * 
  */
 
 var LOWERLIMIT = 124075
@@ -33,11 +37,11 @@ function testPassword(password : int) : boolean {
   return repeat and nondecreasing
 }
 
-for(password in {111111, 223450, 123789, 124566}) {
+for(password in {111111, 223450, 123789, 124566, 123444, 111122}) {
   print("test ${password}: ${testPassword(password) ? "PASS" : "FAIL"}")
 }
 
-
+/*
 var matches = new ArrayList<Integer>()
 var start = System.currentTimeMillis()
 for(candidate in LOWERLIMIT..UPPERLIMIT index i) {
@@ -55,8 +59,13 @@ for(match in matches) {
 
 print("")
 print("${matches.Count} possible correct passwords found")
+*/
 
 /*
+Part 1
 45670 too high
 2150 correct
+
+Part 2
+
 */
