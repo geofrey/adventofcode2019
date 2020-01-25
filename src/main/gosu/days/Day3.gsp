@@ -157,7 +157,7 @@ var wire1 : Path
 var wire2 : Path
 
 // challenge
-var inputLocation = "c:/Users/gsanders/Desktop/Projects/adventofcode2019/src/main/gosu/days/Day3-input.txt"
+var inputLocation = "src/main/gosu/days/Day3-input.txt"
 var lines = new Scanner(new FileInputStream(inputLocation))
 wire1 = new Path(lines.next())
 wire2 = new Path(lines.next())

@@ -24,7 +24,7 @@ uses scratch.IntcodeComputer
 
 
 
-var inputPath = "c:/Users/gsanders/Desktop/Projects/adventofcode2019/src/main/gosu/days/Day2-input.txt"
+var inputPath = "src/main/gosu/days/Day2-input.txt"
 var input =
   new File(inputPath).read()
   //"1,9,10,3,2,3,11,0,99,30,40,50" // example 1 PASS

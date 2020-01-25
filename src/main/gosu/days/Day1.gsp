@@ -28,7 +28,7 @@ function iteratedFuelRequirement(weight : long) : long {
   return totalFuel
 }
 
-var inputSource = new File("c:/Users/gsanders/Desktop/Projects/adventofcode2019/src/main/gosu/days/Day1-input.txt").CanonicalFile
+var inputSource = new File("src/main/gosu/days/Day1-input.txt").CanonicalFile
 print(inputSource.AbsolutePath)
 var input = new Scanner(new FileInputStream(inputSource))
 

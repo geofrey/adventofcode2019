@@ -38,7 +38,7 @@ for(test in testPrograms) {
 }
 
 
-var inputLocation = "c:/Users/gsanders/Desktop/Projects/adventofcode2019/src/main/gosu/days/Day5-input.txt"
+var inputLocation = "src/main/gosu/days/Day5-input.txt"
 var diagnostic = new File(inputLocation).read().split(",").map(\text -> Integer.parseInt(text.trim()))
 
 computer.Debug = false
