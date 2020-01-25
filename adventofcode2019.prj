@@ -2,14 +2,16 @@
   "Title": "Gosu Experiment",
   "Version": 2,
   "Name": "adventofcode2019",
-  "ActiveTab": "src/main/gosu/days/Day5.gsp",
+  "ActiveTab": "src/main/gosu/days/Day6.gsp",
   "Tabs": [
     "src/main/gosu/days/Day5.gsp",
     "src/main/gosu/scratch/RunMe.gsp",
     "src/main/gosu/days/Day1.gsp",
     "src/main/gosu/days/Day2.gsp",
     "src/main/gosu/days/Day3.gsp",
-    "src/main/gosu/days/Day4.gsp"
+    "src/main/gosu/days/Day4.gsp",
+    "src/main/gosu/days/Day2-input.txt",
+    "src/main/gosu/days/Day6.gsp"
   ],
   "SourcePath": [
     "src/main/gosu"
@@ -19,6 +21,19 @@
     "C:/Program Files/Java/jdk1.8.0_241/javafx-src.zip"
   ],
   "RunConfigs": [
+    {
+      "$construct_type": "editor.run.ProgramRunConfig",
+      "_params": {
+        "$construct_type": "editor.run.ProgramRunConfigParameters",
+        "_name": "Day6",
+        "_fqn": "days.Day6",
+        "_vmArgs": null,
+        "_progArgs": null,
+        "_workingDir": null,
+        "_jre": null,
+        "_bJre": 0
+      }
+    },
     {
       "$construct_type": "editor.run.ProgramRunConfig",
       "_params": {
@@ -98,7 +113,7 @@
       }
     }
   ],
-  "MruRunConfig": "Day5",
+  "MruRunConfig": "Day6",
   "Settings": [
     {
       "$construct_type": "editor.settings.CompilerSettings",
