@@ -1,4 +1,5 @@
 package scratch
+uses java.io.File
 
 class IntcodeComputer {
   function dprint(msg : String) {
@@ -12,12 +13,36 @@ class IntcodeComputer {
   // flags
   var halt : boolean as Halt
   var waitingForInput : boolean as WaitingForInput
+  var waitingForOutput : boolean as WaitingForOutput
   var debug : boolean as Debug = false
   
   // IO
-  var input : LinkedList<Integer> as Input
-  var output : LinkedList<Integer> as Output
+  var input : LinkedList<Integer>
+  var output : LinkedList<Integer>
+  var outputAction : block(value:int) : boolean as OutputCallback
+  var inputAction : block() : Integer as InputCallback
   
+  construct() {
+    outputAction = \value -> output.add(value)
+    inputAction = \-> input.HasElements ? input.remove() : null
+  }
+  
+  protected function writeOutput(value : int) : boolean {
+    return outputAction(value)
+  }
+  
+  protected function readInput() : Integer {
+    return inputAction()
+  }
+  
+  function readOutput() : Integer {
+    
+  }
+  
+  function load(source : File) {
+    var data = source.read().split(",").map(\text -> Integer.parseInt(text.trim()))
+    memory = data
+  }
   function load(data : Integer[]) {
     memory = data.copy()
   }
@@ -83,24 +108,24 @@ class IntcodeComputer {
         break
       case 03: // read input
         instructionLength = 2
-        if(input.Empty) {
-          halt = true
+        var A = readInput()
+        if(A == null) {
           waitingForInput = true
           instructionLength = 0
           dprint("halt and wait for input")
           break
         }
-        var inputValue = input.remove()
         var X = memory[PC+1]
-        dprint("input (${inputValue}) -> ${X}")
-        memory[X] = inputValue
+        dprint("input (${A}) -> ${X}")
+        memory[X] = A
         break
       case 04: // write output
         instructionLength = 2
         var args = getParameters(PC, getModes(1, instruction))
         var A = args[0]
         dprint("output (${A})")
-        output.add(A)
+        var writeStatus = writeOutput(A)
+        if(not writeStatus) waitingForOutput = true
         break
       case 05: // jump if true
         instructionLength = 3
@@ -165,18 +190,16 @@ class IntcodeComputer {
 
   function reset() {
     PC = 0
-    halt = true
+    halt = false
     waitingForInput = false
     input = {}
     output = {}
+    dprint("initial ${memory.join(", ")}")
   }
   
   function run() {
-    halt = false
-    waitingForInput = false
-    dprint("initial ${memory.join(", ")}")
     dprint("input [${input.join(", ")}]")
-    while(not halt) {
+    while(not halt and not waitingForInput and not waitingForOutput) {
       execute()
     }
     dprint("output [${output.join(", ")}]")
