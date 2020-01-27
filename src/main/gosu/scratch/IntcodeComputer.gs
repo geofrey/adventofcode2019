@@ -23,6 +23,8 @@ class IntcodeComputer {
   var inputAction : block() : Integer as InputCallback
   
   construct() {
+    input = new LinkedList<Integer>()
+    output = new LinkedList<Integer>()
     outputAction = \value -> output.add(value)
     inputAction = \-> input.HasElements ? input.remove() : null
   }
@@ -36,7 +38,22 @@ class IntcodeComputer {
   }
   
   function readOutput() : Integer {
-    
+    if(output.HasElements) {
+      var value = output.remove()
+      if(waitingForOutput) {
+        waitingForOutput = false
+        run() // ?????????
+      }
+      return value
+    } else return null
+  }
+  
+  function writeInput(value : int) {
+    input.add(value)
+    if(waitingForInput) {
+      waitingForInput = false
+      run() // ????
+    }
   }
   
   function load(source : File) {
@@ -112,7 +129,7 @@ class IntcodeComputer {
         if(A == null) {
           waitingForInput = true
           instructionLength = 0
-          dprint("halt and wait for input")
+          dprint("input not available; suspend")
           break
         }
         var X = memory[PC+1]
@@ -125,7 +142,11 @@ class IntcodeComputer {
         var A = args[0]
         dprint("output (${A})")
         var writeStatus = writeOutput(A)
-        if(not writeStatus) waitingForOutput = true
+        if(not writeStatus) {
+          waitingForOutput = true
+          instructionLength = 0
+          dprint("output not consumed; suspend")
+        }
         break
       case 05: // jump if true
         instructionLength = 3

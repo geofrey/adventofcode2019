@@ -27,48 +27,92 @@ uses scratch.Util
  * 
  */
 
-static class Amplifier {
-  static var controlSoftwareSource = new File("src/main/gosu/days/Day7-input.txt")
-  var computer : IntcodeComputer
-  
-  construct() {
-    computer = new IntcodeComputer()
-    computer.load(controlSoftwareSource)
-  }
-  
-  function run(phase : int, input : int) : int {
-    computer.reset()
-    computer.
-    computer.Input.add(input)
-    computer.run()
-    return computer.Output.first()
-  }
+function parseLineOfInts(line : String) : Integer[] {
+  return line.split(",").map(\text -> Integer.parseInt(text.trim()))
 }
 
-var A = new Amplifier()
-var B = new Amplifier()
-var C = new Amplifier()
-var D = new Amplifier()
-var E = new Amplifier()
+var inputLocation = new File(
+  System.Properties.getProperty("user.dir"),
+  "src/main/gosu/days/Day7-input.txt"
+)
+
+var thruster_control_program : Integer[]
+thruster_control_program = parseLineOfInts(inputLocation.read())
+//thruster_control_program = parseLineOfInts("3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10")
+
+function getThrusters() : IntcodeComputer[] {
+  var amplifiers = new IntcodeComputer[5]
+  for(i in 0..|amplifiers.length) {
+    var controller = new IntcodeComputer()
+    controller.load(thruster_control_program)
+    controller.reset()
+    amplifiers[i] = controller
+  }
+  return amplifiers
+}
 
 function checkInput(phase : int[]) : int {
-  return E.run(phase[4], D.run(phase[3], C.run(phase[2], B.run(phase[1], A.run(phase[0], 0)))))
-}
-
-var samples = {
-  
-}
-var phases : int[] = {0, 1, 2, 3, 4}
-
-var maxThrust = Integer.MIN_VALUE
-var bestOrder : int[]
-for(n in 0..|Util.factorial(phases.Count)) {
-  var phaseOrder = Util.permute(phases, Util.nthderangement(n, phases.Count))
-  var thrust = checkInput(phaseOrder)
-  if(thrust > maxThrust) {
-    maxThrust = thrust
-    bestOrder = phaseOrder
-    print("new best: [${phaseOrder.join(", ")}] -> ${thrust}")
+  var thrustSetting = 0 // initial
+  var amplifiers = getThrusters()
+  for(controller in amplifiers index i) controller.writeInput(phase[i])
+  for(controller in amplifiers) {
+    controller.writeInput(thrustSetting)
+    controller.run()
+    thrustSetting = controller.readOutput()
   }
+  return thrustSetting
 }
 
+function checkInputWithFeedback(phase : int[]) : int {
+  // mostly the same
+  var thrustSetting : Integer = 0 // initial
+  var amplifiers = getThrusters()
+  for(controller in amplifiers index i) controller.writeInput(phase[i])
+  var round = 0
+  do {
+    round += 1
+    for(controller in amplifiers index i) {
+      if(thrustSetting != null) controller.writeInput(thrustSetting)
+      controller.run()
+      thrustSetting = controller.readOutput()
+      var state = {
+        controller.Halt ? "1" : "0",
+        controller.WaitingForInput ? "1" : "0",
+        controller.WaitingForOutput ? "1" : "0"
+      }.join("/")
+      print("amplifier ${{'A','B','C','D','E'}[i]} output ${thrustSetting} ${state}")
+    }
+    print("round ${round} final output ${thrustSetting}")
+  } while(not amplifiers.last().Halt)
+  return thrustSetting
+}
+
+function iatos(value : int[]) : String {
+  return "[${value.join(", ")}]"
+}
+
+function findBestInput(initialSetting : int, phases : int[], test : block(int[]):int) {
+  var maxThrust = Integer.MIN_VALUE
+  var bestOrder : int[]
+  for(n in 0..|Util.factorial(phases.Count)) {
+    var phaseOrder = Util.permute(phases, Util.nthderangement(n, phases.Count))
+    var thrust = test(phaseOrder)
+    if(thrust > maxThrust) {
+      maxThrust = thrust
+      bestOrder = phaseOrder
+      print("new best: ${iatos(phaseOrder)} -> ${thrust}")
+    }
+  }
+  
+  print("best input: ${iatos(bestOrder)} -> ${maxThrust}")
+}
+
+var simplePhases : int[] = {0, 1, 2, 3, 4}
+print("find best order for phase settings ${iatos(simplePhases)}")
+findBestInput(0, simplePhases, \setting -> checkInput(setting))
+
+var feedbackPhases : int[] = {5, 6, 7, 8, 9}
+print("find best order for phase settings ${iatos(feedbackPhases)} with feedback")
+findBestInput(0, feedbackPhases, \setting -> checkInputWithFeedback(setting))
+
+// 3808978 too low // derp, this wasn't the best result, it was just the last one printed to the console!
