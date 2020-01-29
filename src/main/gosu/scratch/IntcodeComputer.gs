@@ -36,7 +36,7 @@ class IntcodeComputer {
   }
   
   function readOutput() : Integer {
-    
+    if
   }
   
   function load(source : File) {

@@ -1,4 +1,5 @@
 package scratch
+uses java.io.File
 
 class Util {
   static function factorial(n : int) : int {
@@ -23,5 +24,14 @@ class Util {
     var permutation = new int[list.length]
     for(i in 0..|list.length) permutation[i] = list[order[i]]
     return permutation
+  }
+  
+  static function getPuzzleInput(fileName : String) : String {
+    var folder = new File(
+      System.Properties.getProperty("user.dir"),
+      "src/main/gosu/days"
+    )
+    var inputFile = new File(folder, fileName)
+    return inputFile.read()
   }
 }
