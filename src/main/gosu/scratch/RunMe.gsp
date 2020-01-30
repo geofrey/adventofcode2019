@@ -1,1 +1,5 @@
-for(p in 0..10) print(scratch.Util.permute({1, 2, 3}, scratch.Util.nthderangement(p, 3)))
+print(Integer.MAX_VALUE)
+print(Integer.MIN_VALUE)
+print("1125899906842624")
+print(Long.MAX_VALUE)
+print(Long.MIN_VALUE)
