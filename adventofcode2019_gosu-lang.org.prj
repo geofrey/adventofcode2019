@@ -2,12 +2,12 @@
   "Title": "Gosu Experiment",
   "Version": 2,
   "Name": "adventofcode2019",
-  "ActiveTab": "src/main/gosu/scratch/IntcodeComputer.gs",
+  "ActiveTab": "src/main/gosu/days/Day8.gsp",
   "Tabs": [
-    "src/main/gosu/days/Day7.gsp",
-    "src/main/gosu/scratch/IntcodeComputer.gs",
-    "src/main/gosu/scratch/RunMe.gsp",
-    "src/main/gosu/scratch/Util.gs"
+    "src/main/gosu/scratch/Util.gs",
+    "src/main/gosu/days/Day8-input.txt",
+    "src/main/gosu/days/Day8.gsp",
+    "src/main/gosu/scratch/IterableEnhancement.gsx"
   ],
   "SourcePath": [
     "src/main/gosu"
@@ -21,8 +21,8 @@
       "$construct_type": "editor.run.ProgramRunConfig",
       "_params": {
         "$construct_type": "editor.run.ProgramRunConfigParameters",
-        "_name": "Day7",
-        "_fqn": "days.Day7",
+        "_name": "Day8",
+        "_fqn": "days.Day8",
         "_vmArgs": null,
         "_progArgs": null,
         "_workingDir": null,
@@ -36,6 +36,19 @@
         "$construct_type": "editor.run.ProgramRunConfigParameters",
         "_name": "RunMe",
         "_fqn": "scratch.RunMe",
+        "_vmArgs": null,
+        "_progArgs": null,
+        "_workingDir": null,
+        "_jre": null,
+        "_bJre": 0
+      }
+    },
+    {
+      "$construct_type": "editor.run.ProgramRunConfig",
+      "_params": {
+        "$construct_type": "editor.run.ProgramRunConfigParameters",
+        "_name": "Day7",
+        "_fqn": "days.Day7",
         "_vmArgs": null,
         "_progArgs": null,
         "_workingDir": null,
@@ -122,7 +135,7 @@
       }
     }
   ],
-  "MruRunConfig": "Day7",
+  "MruRunConfig": "Day8",
   "Settings": [
     {
       "$construct_type": "editor.settings.CompilerSettings",
