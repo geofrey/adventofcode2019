@@ -28,10 +28,10 @@ var testPrograms = {
   "1,1,1,4,99,5,6,0,99",
   "1002,4,3,4,33",
   "3,0,4,0,99"
-}.map(\line -> line.split(",").map(\text -> Integer.parseInt(text.trim())))
+}.map(\line -> line.split(",").map(\text -> Long.parseLong(text.trim())))
 for(test in testPrograms) {
   computer.reset()
-  computer.Input.add(1)
+  computer.writeInput(1)
   computer.load(test)
   computer.run()
   print("")
@@ -39,7 +39,7 @@ for(test in testPrograms) {
 
 
 var inputLocation = "src/main/gosu/days/Day5-input.txt"
-var diagnostic = new File(inputLocation).read().split(",").map(\text -> Integer.parseInt(text.trim()))
+var diagnostic = new File(inputLocation).read().split(",").map(\text -> Long.parseLong(text.trim()))
 
 computer.Debug = false
 

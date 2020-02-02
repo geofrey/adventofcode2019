@@ -20,9 +20,9 @@ class Util {
     return result
   }
   
-  static function permute(list : int[], order : int[]) : int[] {
-    var permutation = new int[list.length]
-    for(i in 0..|list.length) permutation[i] = list[order[i]]
+  static reified function permute<T>(list : List<T>, order : int[]) : List<T> {
+    var permutation = new ArrayList<T>()
+    for(i in 0..|list.Count) permutation.add(list[order[i]])
     return permutation
   }
   

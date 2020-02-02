@@ -27,8 +27,8 @@ uses scratch.Util
  * 
  */
 
-function parseLineOfInts(line : String) : Integer[] {
-  return line.split(",").map(\text -> Integer.parseInt(text.trim()))
+function parseLineOfLongs(line : String) : Long[] {
+  return line.split(",").map(\text -> Long.parseLong(text.trim()))
 }
 
 var inputLocation = new File(
@@ -36,8 +36,8 @@ var inputLocation = new File(
   "src/main/gosu/days/Day7-input.txt"
 )
 
-var thruster_control_program : Integer[]
-thruster_control_program = parseLineOfInts(inputLocation.read())
+var thruster_control_program : Long[]
+thruster_control_program = parseLineOfLongs(inputLocation.read())
 //thruster_control_program = parseLineOfInts("3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10")
 
 function getThrusters() : IntcodeComputer[] {
@@ -51,8 +51,8 @@ function getThrusters() : IntcodeComputer[] {
   return amplifiers
 }
 
-function checkInput(phase : int[]) : int {
-  var thrustSetting = 0 // initial
+function checkInput(phase : Long[]) : long {
+  var thrustSetting : long = 0 // initial
   var amplifiers = getThrusters()
   for(controller in amplifiers index i) controller.writeInput(phase[i])
   for(controller in amplifiers) {
@@ -63,9 +63,9 @@ function checkInput(phase : int[]) : int {
   return thrustSetting
 }
 
-function checkInputWithFeedback(phase : int[]) : int {
+function checkInputWithFeedback(phase : Long[]) : long {
   // mostly the same
-  var thrustSetting : Integer = 0 // initial
+  var thrustSetting : Long = 0 // initial
   var amplifiers = getThrusters()
   for(controller in amplifiers index i) controller.writeInput(phase[i])
   var round = 0
@@ -80,39 +80,39 @@ function checkInputWithFeedback(phase : int[]) : int {
         controller.WaitingForInput ? "1" : "0",
         controller.WaitingForOutput ? "1" : "0"
       }.join("/")
-      print("amplifier ${{'A','B','C','D','E'}[i]} output ${thrustSetting} ${state}")
+      //print("amplifier ${{'A','B','C','D','E'}[i]} output ${thrustSetting} ${state}")
     }
-    print("round ${round} final output ${thrustSetting}")
+    //print("round ${round} final output ${thrustSetting}")
   } while(not amplifiers.last().Halt)
   return thrustSetting
 }
 
-function iatos(value : int[]) : String {
+function latos(value : Long[]) : String {
   return "[${value.join(", ")}]"
 }
 
-function findBestInput(initialSetting : int, phases : int[], test : block(int[]):int) {
-  var maxThrust = Integer.MIN_VALUE
-  var bestOrder : int[]
+function findBestInput(initialSetting : long, phases : Long[], test : block(order:Long[]):long) {
+  var maxThrust = Long.MIN_VALUE
+  var bestOrder : Long[]
   for(n in 0..|Util.factorial(phases.Count)) {
-    var phaseOrder = Util.permute(phases, Util.nthderangement(n, phases.Count))
+    var phaseOrder = Util.permute(phases.toList(), Util.nthderangement(n, phases.Count)).toTypedArray()
     var thrust = test(phaseOrder)
     if(thrust > maxThrust) {
       maxThrust = thrust
       bestOrder = phaseOrder
-      print("new best: ${iatos(phaseOrder)} -> ${thrust}")
+      print("new best: ${latos(phaseOrder)} -> ${thrust}")
     }
   }
   
-  print("best input: ${iatos(bestOrder)} -> ${maxThrust}")
+  print("best input: ${latos(bestOrder)} -> ${maxThrust}")
 }
 
-var simplePhases : int[] = {0, 1, 2, 3, 4}
-print("find best order for phase settings ${iatos(simplePhases)}")
+var simplePhases : Long[] = {0, 1, 2, 3, 4}
+print("find best order for phase settings ${latos(simplePhases)}")
 findBestInput(0, simplePhases, \setting -> checkInput(setting))
 
-var feedbackPhases : int[] = {5, 6, 7, 8, 9}
-print("find best order for phase settings ${iatos(feedbackPhases)} with feedback")
+var feedbackPhases : Long[] = {5, 6, 7, 8, 9}
+print("find best order for phase settings ${latos(feedbackPhases)} with feedback")
 findBestInput(0, feedbackPhases, \setting -> checkInputWithFeedback(setting))
 
 // 3808978 too low // derp, this wasn't the best result, it was just the last one printed to the console!

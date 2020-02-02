@@ -33,7 +33,7 @@ var input =
   //"2,4,4,5,99,0" // sample 3 PASS
   //"1,1,1,4,99,5,6,0,99" // sample 4 PASS
   
-var program = input.split(",").map(\text -> Integer.parseInt(text.trim()))
+var program = input.split(",").map(\text -> Long.parseLong(text.trim()))
 
 var computer = new IntcodeComputer()
 computer.Debug = false
