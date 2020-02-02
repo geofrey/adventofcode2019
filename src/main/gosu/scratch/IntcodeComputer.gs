@@ -12,6 +12,7 @@ class IntcodeComputer {
   var memory : long[]
   var PC : int
   var relativeBase : int
+  var clock : long as Clock // could be going a long time
   
   // flags
   var halt : boolean as Halt
@@ -43,6 +44,7 @@ class IntcodeComputer {
     
   function reset() {
     PC = 0
+    clock = 0
     relativeBase = 0
     halt = false
     waitingForInput = false
@@ -176,6 +178,8 @@ class IntcodeComputer {
   }
   
   function execute() {
+    clock += 1
+    
     var instruction = memory[PC]
     dprint("execute ${instruction}")
     var opcode = instruction % 100

@@ -49,6 +49,7 @@ computer.Debug = false
 computer.writeInput(1)
 computer.run()
 print(computer.dumpOutput())
+print("(${computer.Clock} instructions)")
 
 print("\nBOOST sensor-boost program")
 computer.load(boost_program)
@@ -56,4 +57,5 @@ computer.reset()
 computer.writeInput(2)
 computer.run()
 print(computer.dumpOutput())
+print("(${computer.Clock} instructions)")
 
