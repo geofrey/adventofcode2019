@@ -49,15 +49,16 @@ for(systemCode in {1, 5}) {
   computer.load(diagnostic)
   computer.run()
   while(computer.WaitingForInput) {
-    computer.Input.add(systemCode)
+    computer.writeInput(systemCode)
     computer.run()
   }
-
-  for(o in 0..|computer.Output.Count-1 index i) {
-    var result = computer.Output.get(o)
+  
+  var output = computer.dumpOutput()
+  for(o in 0..|output.Count-1 index i) {
+    var result = output[o]
     print("diagnostic ${i}: ${result} - ${result == 0 ? "PASS" : "FAIL"}")
   }
-  print("final diagnostic code, system ${systemCode}: ${computer.Output.last()}")
+  print("final diagnostic code, system ${systemCode}: ${output.last()}")
 }
 
 
