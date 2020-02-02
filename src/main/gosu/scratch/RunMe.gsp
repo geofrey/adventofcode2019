@@ -1,5 +1,1 @@
-print(Integer.MAX_VALUE)
-print(Integer.MIN_VALUE)
-print("1125899906842624")
-print(Long.MAX_VALUE)
-print(Long.MIN_VALUE)
+IntcodeDisassembler.executeWithArgs({"-p", "109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99"})
