@@ -1,6 +1,7 @@
 uses java.io.FileInputStream
 uses java.util.regex.Pattern
 uses gw.util.Pair
+uses scratch.Direction
 
 /**
  * Day 3: Crossed Wires
@@ -23,13 +24,6 @@ function manhattanDistance(coord : Pair<Integer, Integer>) : int {
 
 function manhattanDistance(x : int, y : int) : int {
   return Math.abs(x) + Math.abs(y)
-}
-
-enum Direction {
-  R,
-  L,
-  U,
-  D
 }
 
 class Intersection {

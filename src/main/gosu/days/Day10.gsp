@@ -1,4 +1,5 @@
 uses scratch.IterableEnhancement
+uses scratch.IntegerPoint
 
 /**
  * Day 10: Monitoring Station
@@ -23,69 +24,24 @@ uses scratch.IterableEnhancement
  * report coordinates as X*100 + Y
  */
 
-static class Point {
-  var x : int
-  var y : int
-  
-  construct(xCoord : int, yCoord : int) {
-    x = xCoord
-    y = yCoord
-  }
-  
-  construct(that : Point) {
-    x = that.x
-    y = that.y
-  }
-  
-  override function toString() : String {
-    return "(${x}, ${y})"
-  }
-  
-  override function equals(that : Object) : boolean {
-    if(that typeis Point) {    
-      return this.x == that.x and this.y == that.y
-    } else {
-      return false
-    }
-  }
-  
-  function subtract(that : Point) : Point {
-    return new Point(this.x - that.x, this.y - that.y)
-  }
-  
-  function distance(that : Point) : double {
-    return Math.sqrt(Math.pow(that.x - this.x, 2) + Math.pow(that.y - this.y, 2))
-  }
-  
-  function dotProduct(that : Point) : int /* since we're promised to always be on a grid */ {
-    return this.x * that.x + this.y * that.y
-  }
-  
-  function parallel(that : Point) : boolean {
-    return (this.y * that.x == this.x * that.y) and (this.dotProduct(that) > 0)
-  }
-  
-  property get Angle() : double {
-    return Math.atan2(x, y) + Math.PI
-  }
-}
+
 
 static class SpaceMap {
-  var asteroids : Collection<Point>
+  var asteroids : Collection<IntegerPoint>
   var width : int
   var height : int
-  protected var observer : Point
+  protected var observer : IntegerPoint
   
   construct(mapData : String) {
-    asteroids = new HashSet<Point>()
+    asteroids = new HashSet<IntegerPoint>()
     for(line in new Scanner(mapData) index y) {
       for(column in new Scanner(line).useDelimiter("") index x) {
         switch(column) {
           case "#":
-            asteroids.add(new Point(x,y))
+            asteroids.add(new IntegerPoint(x,y))
             break
           case "O":
-            observer = new Point(x,y)
+            observer = new IntegerPoint(x,y)
             break
           case ".":
             // okay
@@ -103,8 +59,8 @@ static class SpaceMap {
     //print("SpaceMap(String) scanned ${asteroids.Count} in ${width}x${height}")
   }
   
-  construct(otheroids : Collection<Point>, otherWidth : int, otherHeight : int) {
-    asteroids = new HashSet<Point>(otheroids)
+  construct(otheroids : Collection<IntegerPoint>, otherWidth : int, otherHeight : int) {
+    asteroids = new HashSet<IntegerPoint>(otheroids)
     width += otherWidth
     height += otherHeight
     observer = null
@@ -112,17 +68,17 @@ static class SpaceMap {
   }
   
   construct(that : SpaceMap) {
-    asteroids = new HashSet<Point>(that.asteroids)
+    asteroids = new HashSet<IntegerPoint>(that.asteroids)
     width = that.width
     height = that.height
     Observer = that.observer
   }
   
-  property get Observer() : Point {
+  property get Observer() : IntegerPoint {
     return observer
   }
-  property set Observer(obs : Point) {
-    observer = obs == null ? null : new Point(obs)
+  property set Observer(obs : IntegerPoint) {
+    observer = obs == null ? null : new IntegerPoint(obs)
   }
   
   property get Count() : int {
@@ -136,7 +92,7 @@ static class SpaceMap {
       buffer.append(".".repeat(width))
       buffer.append(linebreak)
     }
-    var insertAt = \asteroid : Point -> asteroid.y * (width + linebreak.length) + asteroid.x
+    var insertAt = \asteroid : IntegerPoint -> asteroid.y * (width + linebreak.length) + asteroid.x
     for(asteroid in asteroids) {
       var pos = insertAt(asteroid)
       if(buffer.substring(pos, pos+1) == linebreak) throw new IllegalStateException("replacing line break with content value")
@@ -153,8 +109,8 @@ static class SpaceMap {
     return buffer.toString()
   }
   
-  function getNeighbors(origin : Point) : SpaceMap {
-    var visible = new HashSet<Point>()
+  function getNeighbors(origin : IntegerPoint) : SpaceMap {
+    var visible = new HashSet<IntegerPoint>()
     for(incoming in asteroids) {
       if(incoming.equals(origin)) continue
       
@@ -179,17 +135,17 @@ static class SpaceMap {
     return new SpaceMap(asteroids.subtract(that.asteroids), width, height)
   }
   
-  function laserPass() : List<Point> {
+  function laserPass() : List<IntegerPoint> {
     return asteroids
       .orderBy(\p -> (2*Math.PI - p.subtract(observer).Angle) % (2*Math.PI))
       .thenBy(\p -> Observer.distance(p)) // not necessary for the puzzle but if the laser were strong enough to hit them all at once, this is what would happen
   }
   
-  function laserOrder() : List<Point> {
+  function laserOrder() : List<IntegerPoint> {
     if(Observer == null) return null // we don't have our own GIANT LASER yet
     
     var objectsInSpace = new SpaceMap(this)
-    var laserOrder = new ArrayList<Point>()
+    var laserOrder = new ArrayList<IntegerPoint>()
     while(objectsInSpace.Count > 1 /* monitoring station won't laser itself */) {
       var nextRound = objectsInSpace.getNeighbors(Observer)
 //      print("to be lasered:")
@@ -238,7 +194,7 @@ for(data in {
     print("space is empty")
     continue
   }
-  var bestAsteroid : Point
+  var bestAsteroid : IntegerPoint
   var neighbors : SpaceMap
   ;{
     var distances = map.asteroids.mapToKeyAndValue(\p -> p, \p -> map.getNeighbors(p))
