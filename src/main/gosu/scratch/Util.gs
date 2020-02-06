@@ -28,10 +28,14 @@ class Util {
   
   static function getPuzzleInput(fileName : String) : String {
     var folder = new File(
-      System.Properties.getProperty("user.dir"),
+      System.Properties.getProperty("user.dir"), // this is no good when debugging; user.dir gets set differently
       "src/main/gosu/days"
     )
     var inputFile = new File(folder, fileName)
     return inputFile.read()
+  }
+  
+  static function csvLongs(line : String) : Long[] {
+    return new Maperator(new Scanner(line.trim()).useDelimiter(","), \text -> Long.parseLong(text)).toList().toTypedArray()
   }
 }
