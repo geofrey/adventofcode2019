@@ -184,4 +184,5 @@ print(new HullPanel(2, 3).hashCode())
 print(new HullPanel(2, 3).hashCode())
 */
 
-JHARBGCU
+// it was upside down due to Space Image Format
+// JHARBGCU
