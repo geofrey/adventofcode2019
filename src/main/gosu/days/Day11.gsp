@@ -13,7 +13,7 @@
  * Movements consist of turning 90 degrees to the left
  */
 
-uses scratch.IntcodeComputer
+uses scratch.intcode.IntcodeComputer
 uses scratch.IntegerPoint
 uses scratch.Direction
 uses scratch.Util
@@ -138,10 +138,11 @@ function findBounds(points : Collection<IntegerPoint>) : Map<Direction, Integer>
   return {U -> top, D -> bottom, L -> left, R -> right}
 }
 var paintingProgram =
-  //Util.csvLongs(Util.getPuzzleInput("Day11-input.txt"))
-  Util.csvLongs(new java.io.File("/Users/user2017/Desktop/Projects/adventofcode2019/src/main/gosu/days/Day11-input.txt").read())
+  Util.csvLongs(Util.getPuzzleInput("Day11-input.txt"))
+  //Util.csvLongs(new java.io.File("/Users/user2017/Desktop/Projects/adventofcode2019/src/main/gosu/days/Day11-input.txt").read())
 var testRun = new PaintingRobotSimulator(paintingProgram)
 //testRun.run(8000)
+testRun.computer.Debug = true
 testRun.run()
 
 print("${testRun.paintedPanels.Count} hull panels were harmed during the making of this film")
@@ -158,7 +159,6 @@ var hull = SpaceImage.blankImage(width, height, 2)
 for(panel in testRun.paintedPanels.Values) {
   hull.data[0][panel.x - bounds[L]][panel.y - bounds[D]] = panel.color as int
 }
-
 
 print(hull.render_upsideDown())
 

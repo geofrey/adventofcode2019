@@ -21,7 +21,8 @@ class Util {
     return result
   }
   
-  static reified function permute<T>(list : List<T>, order : int[]) : List<T> {
+  //static reified function permute<T>(list : List<T>, order : int[]) : List<T> { // language versions???
+  static function permute<T>(list : List<T>, order : int[]) : List<T> {
     var permutation = new ArrayList<T>()
     for(i in 0..|list.Count) permutation.add(list[order[i]])
     return permutation

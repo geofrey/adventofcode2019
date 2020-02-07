@@ -1,7 +1,7 @@
 uses java.io.FileInputStream
 uses java.io.File
 uses gw.util.Pair
-uses scratch.IntcodeComputer
+uses scratch.intcode.IntcodeComputer
 
 /**
  * Day 2: 1202 Program Alarm

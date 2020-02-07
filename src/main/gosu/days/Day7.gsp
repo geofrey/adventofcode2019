@@ -1,4 +1,4 @@
-uses scratch.IntcodeComputer
+uses scratch.intcode.IntcodeComputer
 uses java.io.File
 uses scratch.Util
 

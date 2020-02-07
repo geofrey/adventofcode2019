@@ -1,5 +1,5 @@
 uses scratch.Util
-uses scratch.IntcodeComputer
+uses scratch.intcode.IntcodeComputer
 
 /**
  * Day 9: Sensor Boost
