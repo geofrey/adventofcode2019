@@ -6,3 +6,14 @@ var b = new IntegerPoint(1, 2)
 print(".equals(): ${a.equals(b)}")
 print("object equality: ${a == b}")
 print("reference equality: ${a === b}")
+
+
+print("")
+
+for(bounds in {{0, 10}, {10, 0}}) {
+  var start = bounds[0]
+  var end = bounds[1]
+  for(range in {start..end, start..|end, start|..end, start|..|end}) {
+    print(range.toList())
+  }
+}

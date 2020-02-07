@@ -26,7 +26,7 @@ class IntegerPoint {
     }
   }
   
-  static function hashCode(x : int, y : int) : int {
+  public static function cantor_pair(x : int, y : int) : int {
     var ax = Math.abs(x)
     var ay = Math.abs(y)
     var diagonalized = (ax + ay)*(ax + ay + 1)/2 + ay
@@ -38,7 +38,7 @@ class IntegerPoint {
   }
   
   override function hashCode() : int {
-    return hashCode(x, y)
+    return cantor_pair(x, y)
   }
   
   function subtract(that : IntegerPoint) : IntegerPoint {

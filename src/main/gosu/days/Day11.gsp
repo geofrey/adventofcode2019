@@ -159,7 +159,8 @@ for(panel in testRun.paintedPanels.Values) {
   hull.data[0][panel.x - bounds[L]][panel.y - bounds[D]] = panel.color as int
 }
 
-print(hull.render())
+
+print(hull.render_upsideDown())
 
 /*
 // simple check that coordinate hashes are unique

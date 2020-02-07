@@ -1,4 +1,5 @@
 package scratch
+uses gw.lang.reflect.interval.IntegerInterval
 
 class SpaceImage {
   public var width : int
@@ -59,10 +60,10 @@ class SpaceImage {
     2 -> " "  // transparent
   }
 
-  function render(layer : int[][]) : String {
+  static function render(layer : int[][], xOrder : IntegerInterval, yOrder : IntegerInterval) : String {
     var output = new StringBuilder()
-    for(y in 0..|height) {
-      for(x in 0..|width) {
+    for(y in yOrder) {
+      for(x in xOrder) {
         output.append(colors[layer[x][y]])
       }
       output.append("\n")
@@ -70,7 +71,19 @@ class SpaceImage {
     return output.toString()
   }
   
+  static function render(layer : int[][]) : String {
+    return render(layer, 0..|layer.length, 0..|layer[0].length)
+  }
+  
+  static function render_upsideDown(layer : int[][]) : String {
+    return render(layer, 0..|layer.length, layer[0].length|..0)
+  }
+  
   function render() : String {
     return render(visible())
+  }
+  
+  function render_upsideDown() : String {
+    return render_upsideDown(visible())
   }
 }
