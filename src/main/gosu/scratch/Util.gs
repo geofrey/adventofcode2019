@@ -1,5 +1,6 @@
 package scratch
 uses java.io.File
+uses gw.util.Pair
 
 class Util {
   static function factorial(n : int) : int {
@@ -38,4 +39,16 @@ class Util {
   static function csvLongs(line : String) : Long[] {
     return new Maperator(new Scanner(line.trim()).useDelimiter(","), \text -> Long.parseLong(text)).toList().toTypedArray()
   }
+  
+  static function cartesianProduct<T,U>(left : Collection<T>, right : Collection<U>, ordered : boolean = true) : Set<Pair<T,U>> {
+    var product = new HashSet<Pair<T,U>>()
+    for(a in left) for(b in right) {
+      if(ordered or not product.contains(Pair.make(b, a))) {
+        product.add(Pair.make(a, b))
+      }
+    }
+    return product
+  }
+  
+  
 }
