@@ -26,4 +26,9 @@ class IntegerPoint3 {
     //return "<x=${x}, y=${y}, z=${z}>"
     return String.format("<x=% 3d, y=% 3d, z=% 3d>", {x, y, z})
   }
+  
+  override function equals(that : Object) : boolean {
+    if(that typeis IntegerPoint3) return this.x == that.x and this.y == that.y and this.z == that.z
+    else return false
+  }
 }

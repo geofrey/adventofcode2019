@@ -40,6 +40,11 @@ static class HeavenlyBody {
     velocity = new IntegerPoint3(0, 0, 0)
   }
   
+  construct(other : HeavenlyBody) {
+    position = new IntegerPoint3(other.position)
+    velocity = new IntegerPoint3(other.velocity)
+  }
+  
   private static var bodyDataPattern = Pattern.compile("<\\s*x\\s*=\\s*(-?\\d+)\\s*,\\s+y\\s*=\\s*(-?\\d+)\\s*,\\s+z\\s*=\\s*(-?\\d+)\\s*>")
   static function load(data : String) : HeavenlyBody {
     var matcher = bodyDataPattern.matcher(data)
@@ -104,13 +109,25 @@ static class HeavenlyBody {
   override function toString() : String {
     return "pos=${position}, vel=${velocity}"
   }
+  
+  override function equals(that : Object) : boolean {
+    if(that typeis HeavenlyBody) return this.position.equals(that.position) and this.velocity.equals(that.velocity)
+    else return false
+  }
 }
 
 static class PlanetarySystem {
   var bodies : List<HeavenlyBody>
+  var time : int
+  
+  var originals : List<HeavenlyBody>
+  var xCycleTime : Integer
+  var yCycleTime : Integer
+  var zCycleTime : Integer
   
   construct(heavenlyBodies : List<HeavenlyBody>) {
     bodies = heavenlyBodies
+    originals = bodies.map(\body -> new HeavenlyBody(body))
   }
   
   static function load(data : String) : PlanetarySystem {
@@ -125,7 +142,19 @@ static class PlanetarySystem {
     return bodies.map(\body -> body.TotalEnergy).sum()
   }
   
+  function dimensionalCycle(coordinator(point : IntegerPoint3):int) : boolean {
+    for(i in 0..|bodies.Count) {
+      if(
+        (coordinator(bodies[i].position) != coordinator(originals[i].position)) or
+        (coordinator(bodies[i].velocity) != coordinator(originals[i].velocity))
+      ) return false
+    }
+    /* no mismatches? then */ return true
+  }
+  
   function timeStep() {
+    time += 1
+    
     for(pair in Util.cartesianProduct(bodies, bodies, false)) {
       if(pair.First == pair.Second) continue
       
@@ -134,6 +163,19 @@ static class PlanetarySystem {
     for(body in bodies) {
       body.move()
     }
+    
+    if(xCycleTime == null and dimensionalCycle(\point -> point.x)) xCycleTime = time
+    if(yCycleTime == null and dimensionalCycle(\point -> point.y)) yCycleTime = time
+    if(zCycleTime == null and dimensionalCycle(\point -> point.z)) zCycleTime = time
+  }
+  
+  property get HasCycled() : boolean {
+    return xCycleTime != null and yCycleTime != null and zCycleTime != null
+  }
+  
+  property get SystemCycleTime() : Long {
+    if(not HasCycled) return null
+    else return scratch.Util.lcm({xCycleTime, yCycleTime, zCycleTime})
   }
   
   override function toString() : String {
@@ -142,16 +184,21 @@ static class PlanetarySystem {
 }
 
 function run(planetarySystem : PlanetarySystem, limit : int) {
-  print("after 0 steps:")
+  print("after ${planetarySystem.time} steps:")
   print(planetarySystem)
-  for(time in 1..limit) {
+  for(1..limit) {
     planetarySystem.timeStep()
 //    print("after ${time} steps:")
 //    print(planetarySystem)
   }
-  print("after ${limit} steps:")
+  print("after ${planetarySystem.time} steps:")
   print(planetarySystem)
   print("total energy: ${planetarySystem.TotalEnergy}")
+  if(planetarySystem.HasCycled) {
+    print("universe should repeat in ${planetarySystem.SystemCycleTime} steps")
+  } else {
+    print("universal cycle time unknown")
+  }
   print("")
 }
 
@@ -197,3 +244,6 @@ run(system, 100)
 
 system = PlanetarySystem.load(puzzleInput)
 run(system, 1000)
+run(system, 10000)
+run(system, 50000)
+
