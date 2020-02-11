@@ -194,6 +194,9 @@ function run(planetarySystem : PlanetarySystem, limit : int) {
   print("after ${planetarySystem.time} steps:")
   print(planetarySystem)
   print("total energy: ${planetarySystem.TotalEnergy}")
+  if(planetarySystem.xCycleTime != null) print("x-dimension cycle time ${planetarySystem.xCycleTime}")
+  if(planetarySystem.yCycleTime != null) print("y-dimension cycle time ${planetarySystem.yCycleTime}")
+  if(planetarySystem.zCycleTime != null) print("z-dimension cycle time ${planetarySystem.zCycleTime}")
   if(planetarySystem.HasCycled) {
     print("universe should repeat in ${planetarySystem.SystemCycleTime} steps")
   } else {
@@ -246,4 +249,5 @@ system = PlanetarySystem.load(puzzleInput)
 run(system, 1000)
 run(system, 10000)
 run(system, 50000)
+run(system, 500000)
 
