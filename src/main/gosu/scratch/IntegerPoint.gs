@@ -30,7 +30,8 @@ class IntegerPoint {
     var ax = Math.abs(x)
     var ay = Math.abs(y)
     var diagonalized = (ax + ay)*(ax + ay + 1)/2 + ay
-    // Cantor's pairing function is defined for natural numbers; we need to handle negatives, too
+    // Cantor's pairing function is defined for natural numbers; we need to handle all integers
+    // offset by quadrant
     diagonalized *= 4
     if(x < 0) diagonalized += 2
     if(y < 0) diagonalized += 1
@@ -59,23 +60,5 @@ class IntegerPoint {
   
   property get Angle() : double {
     return Math.atan2(x, y) + Math.PI
-  }
-  
-  // this might not belong here
-  function step(direction : Direction) : IntegerPoint {
-    switch(direction) {
-      case U:
-        return new IntegerPoint(x, y+1)
-      case L:
-        return new IntegerPoint(x-1, y)
-      case R:
-        return new IntegerPoint(x+1, y)
-      case D:
-        return new IntegerPoint(x, y-1)
-      case null:
-        return this
-      default:
-        throw new IllegalStateException("what direction even is ${direction}??")
-    }
   }
 }

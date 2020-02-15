@@ -119,11 +119,11 @@ class Intcode {
       // halt
       ic.halt = true
       ic.dprint("hammertime")
-    }},
+    }}
     
     // NONSTANDARD FEATURES
     // stuff that felt like it ought to be there
-    new Intcode() { :symbol = "nop", :opcode = 98, :instructionLength = 1, :spec = 1, :execute = \ic -> {
+    ,new Intcode() { :symbol = "nop", :opcode = 98, :instructionLength = 1, :spec = 1, :execute = \ic -> {
       // no-op
       ic.dprint("nope")
     }},

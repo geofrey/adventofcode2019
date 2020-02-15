@@ -18,31 +18,49 @@ uses scratch.IntegerPoint
 uses scratch.Direction
 uses scratch.Util
 uses scratch.SpaceImage
+uses scratch.RasterPoint
 
-static class HullPanel extends IntegerPoint {
-  public var color : Long
+static class HullPanel extends RasterPoint {
   
   construct(xCoord : int, yCoord : int) {
     super(xCoord, yCoord)
-    color = null
+    value = null
   }
   
-  construct(other : IntegerPoint) {
+  construct(other : RasterPoint) {
     super(other)
   }
-  
-  override function step(direction : Direction) : HullPanel {
-    var stepped = new HullPanel(super.step(direction))
-    stepped.color = color
+    // this might not belong here
+  function step(direction : Direction) : HullPanel {
+    var stepped : HullPanel
+    switch(direction) {
+      case U:
+        stepped = new HullPanel(x, y+1)
+        break
+      case L:
+       stepped = new HullPanel(x-1, y)
+       break
+      case R:
+        stepped = new HullPanel(x+1, y)
+        break
+      case D:
+        stepped = new HullPanel(x, y-1)
+        break
+      case null:
+        return this
+      default:
+        throw new IllegalStateException("what direction even is ${direction}??")
+    }
+    stepped.value = value
     return stepped
   }
   
   override function toString() : String {
-    return "(${x}, ${y})[${color}]"
+    return "(${x}, ${y})[${value}]"
   }
 }
 
-abstract static class HullPaintingRobot {
+abstract static class AbstractHullPaintingRobot {
   var computer : IntcodeComputer
   var position : HullPanel
   var orientation : Direction
@@ -75,7 +93,7 @@ abstract static class HullPaintingRobot {
   abstract function move(instruction : long);
 }
 
-static class PaintingRobotSimulator extends HullPaintingRobot {
+static class HullPaintingRobot extends AbstractHullPaintingRobot {
   var paintedPanels : Map<Integer, HullPanel>
   
   construct(program : Long[]) {
@@ -84,7 +102,7 @@ static class PaintingRobotSimulator extends HullPaintingRobot {
     position = new HullPanel(0, 0)
     
     // part 2: the robot's control program expects to start on a white panel
-    position.color = 1
+    position.value = 1
     paintedPanels.put(position.hashCode(), position)
     
     orientation = U
@@ -92,7 +110,7 @@ static class PaintingRobotSimulator extends HullPaintingRobot {
   
   override function readColor() : long {
     if(paintedPanels.containsKey(position.hashCode())) {
-      return paintedPanels.get(position.hashCode()).color
+      return paintedPanels.get(position.hashCode()).value
     } else {
       return 0
     }
@@ -104,7 +122,7 @@ static class PaintingRobotSimulator extends HullPaintingRobot {
     } else {
       paintedPanels.put(position.hashCode(), position)
     }
-    position.color = color
+    position.value = color as int
   }
   
   override function move(instruction : long) {
@@ -140,9 +158,9 @@ function findBounds(points : Collection<IntegerPoint>) : Map<Direction, Integer>
 var paintingProgram =
   Util.csvLongs(Util.getPuzzleInput("Day11-input.txt"))
   //Util.csvLongs(new java.io.File("/Users/user2017/Desktop/Projects/adventofcode2019/src/main/gosu/days/Day11-input.txt").read())
-var testRun = new PaintingRobotSimulator(paintingProgram)
+var testRun = new HullPaintingRobot(paintingProgram)
 //testRun.run(8000)
-testRun.computer.Debug = true
+//testRun.computer.Debug = true
 testRun.run()
 
 print("${testRun.paintedPanels.Count} hull panels were harmed during the making of this film")
@@ -157,7 +175,7 @@ print("hull dimensions: ${width} x ${height} (${width * height} panels)")
 
 var hull = SpaceImage.blankImage(width, height, 2)
 for(panel in testRun.paintedPanels.Values) {
-  hull.data[0][panel.x - bounds[L]][panel.y - bounds[D]] = panel.color as int
+  hull.data[0][panel.x - bounds[L]][panel.y - bounds[D]] = panel.value as int
 }
 
 print(hull.render_upsideDown())

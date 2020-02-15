@@ -6,7 +6,7 @@ class IntcodeComputer {
     if(debug) print(msg)
   }
   
-  static var MEMORYSIZE = 2000
+  static var MEMORYSIZE = 4000
   
   // basics
   var memory : long[]
@@ -27,10 +27,10 @@ class IntcodeComputer {
   var debug : boolean as Debug = false
   
   // IO
-  var input : LinkedList<Long>
-  var output : LinkedList<Long>
-  var outputAction : block(value:long) : boolean as OutputCallback
-  var inputAction : block() : Long as InputCallback
+  var writeOutputAction : block(value:long):boolean as WriteOutputCallback
+  var readOutputAction :  block():Long              as ReadOutputCallback
+  var readInputAction :   block():Long              as ReadInputCallback
+  var writeInputAction :  block(value:long):boolean as WriteInputCallback
   
   static var intcodes = Intcode.Intcodes
   
@@ -44,10 +44,24 @@ class IntcodeComputer {
   }
   
   function initDefaultIO() {
-    input = new LinkedList<Long>()
-    output = new LinkedList<Long>()
-    outputAction = \value -> output.add(value)
-    inputAction = \-> input.HasElements ? input.remove() : null
+    var output = new LinkedList<Long>()
+    writeOutputAction = \value -> output.add(value)
+    readOutputAction = \-> {
+      if(output.HasElements) {
+        return output.remove()
+      } else return null
+    }
+
+    var input = new LinkedList<Long>()
+    writeInputAction = \value:long-> {
+      if(not input.add(value)) return false
+      return true
+    }
+    readInputAction = \ -> {
+      if(input.HasElements) return input.remove()
+      else return null
+    }
+    
   }
     
   function reset() {
@@ -55,18 +69,18 @@ class IntcodeComputer {
     clock = 0
     relativeBase = 0
     halt = false
+    while(readInputAction() != null); // burn any remaining IO
+    while(readOutputAction() != null);
     waitingForInput = false
-    input = {}
-    output = {}
     dprint("initial ${memory.join(", ")}")
   }
   
   function run() {
-    dprint("input [${input.join(", ")}]")
+    //dprint("input [${input.join(", ")}]")
     while(not halt and not waitingForInput and not waitingForOutput) {
       step()
     }
-    dprint("output [${output.join(", ")}]")
+    //dprint("output [${output.join(", ")}]")
   }
   
   function load(source : File) {
@@ -87,31 +101,28 @@ class IntcodeComputer {
     memory[address] = value
   }
   
-  protected function writeOutput(value : long) : boolean {
-    return outputAction(value)
-  }
-  
   protected function readInput() : Long {
-    return inputAction()
+    return readInputAction()
   }
   
   function readOutput() : Long {
-    if(output.HasElements) {
-      var value = output.remove()
-      if(waitingForOutput) {
-        waitingForOutput = false
-        run() // ?????????
-      }
-      return value
-    } else return null
+    var value = readOutputAction()
+    if(waitingForOutput) waitingForOutput = false
+    run()
+    return value
   }
   
-  function writeInput(value : long) {
-    input.add(value)
+  function writeInput(value : long) : boolean {
+    if(not writeInputAction(value)) return false
     if(waitingForInput) {
       waitingForInput = false
       run() // ????
     }
+    return true
+  }
+  
+  protected function writeOutput(value : long) : boolean {
+    return writeOutputAction(value)
   }
   
   function dumpOutput() : List<Long> {
