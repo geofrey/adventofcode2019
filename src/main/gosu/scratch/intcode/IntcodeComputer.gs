@@ -24,6 +24,7 @@ class IntcodeComputer {
   protected var halt : boolean as Halt
   protected var waitingForInput : boolean as WaitingForInput
   protected var waitingForOutput : boolean as WaitingForOutput
+  protected var error : boolean as Error
   var debug : boolean as Debug = false
   
   // IO
@@ -73,14 +74,6 @@ class IntcodeComputer {
     while(readOutputAction() != null);
     waitingForInput = false
     dprint("initial ${memory.join(", ")}")
-  }
-  
-  function run() {
-    //dprint("input [${input.join(", ")}]")
-    while(not halt and not waitingForInput and not waitingForOutput) {
-      step()
-    }
-    //dprint("output [${output.join(", ")}]")
   }
   
   function load(source : File) {
@@ -144,6 +137,7 @@ class IntcodeComputer {
     } else {
       dprint("illegal instruction ${instruction}")
       halt = true
+      error = true
       return false
     }
   }
@@ -167,13 +161,23 @@ class IntcodeComputer {
   
   private static var modeName : String[] = {"positional", "immediate", "relative"}
   
-  protected function fetch(parameter : int) : long {
+  protected function assertAddressInRange(address : int) : boolean {
+    if(address < 0 or address >= memory.length) { // address overflow
+      halt = true
+      error = true
+      return false
+    } else {
+      return true
+    }
+  }
+  
+  protected function fetch(parameter : int) : Long {
     var arg = parameters[parameter]
     var mode = modes[parameter]
-    var value : long
+    var value : Long = null
     switch(mode) {
       case 0:
-        value = memory[arg as int]
+        if(assertAddressInRange(arg as int)) value = memory[arg as int]
         dprint("fetch ${arg} ${modeName[mode]} : ${value}")
         break
       case 1:
@@ -181,7 +185,8 @@ class IntcodeComputer {
         dprint("fetch ${value} ${modeName[mode]}")
         break
       case 2:
-        value = memory[arg as int + relativeBase]
+        var location = arg as int + relativeBase
+        if(assertAddressInRange(location)) value = memory[arg as int + relativeBase]
         dprint("fetch ${arg} ${modeName[mode]} ${relativeBase} : ${value}")
         break
       default:
@@ -191,7 +196,7 @@ class IntcodeComputer {
     return value
   }
   
-  protected function store(parameter : int, value : long) {
+  protected function store(parameter : int, value : long) : boolean {
     var address = parameters[parameter] as int
     var mode = modes[parameter]
     var target : int
@@ -199,15 +204,24 @@ class IntcodeComputer {
       case 0:
         target = address
         break
-      // "parameters that an instruction writes to will never be in immediate mode"
+      case 1:
+        // "parameters that an instruction writes to will never be in immediate mode"
+        error = true
+        halt = true
+        break
       case 2:
         target = address + relativeBase
         break
       default:
         throw new IllegalArgumentException("store mode ${mode}")
     }
-    dprint("store ${value} -> ${address} ${modeName[mode]} -> ${target}")
-    memory[target] = value
+    if(assertAddressInRange(target)) {
+      dprint("store ${value} -> ${address} ${modeName[mode]} -> ${target}")
+      memory[target] = value
+      return true
+    } else {
+      return false
+    }
   }
   
   function step() {
@@ -218,10 +232,18 @@ class IntcodeComputer {
       fetchParameters()
       instructionLength = intcode.instructionLength // may be modified by microcode
       intcode.execute(this)
-      PC += instructionLength
+      if(not error) PC += instructionLength
     }
     
     dprint(memory.join(", "))
   }
-
+  
+  function run() {
+    //dprint("input [${input.join(", ")}]")
+    while(not halt and not waitingForInput and not waitingForOutput) {
+      step()
+    }
+    //dprint("output [${output.join(", ")}]")
+  }
+  
 }

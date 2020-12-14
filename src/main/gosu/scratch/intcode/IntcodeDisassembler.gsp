@@ -1,39 +1,10 @@
 // first stab at automated disassembly
 
-static class Opcode {
-  var code : int
-  var name : String
-  var size : int
-  
-  override function toString() : String {
-    return name
-  }
-}
-
-static var opcodes : Map<Integer, Opcode> = {
-   01 -> new Opcode() {:code=01, :name="add", :size=4}
-  ,02 -> new Opcode() {:code=02, :name="mul", :size=4}
-  ,03 -> new Opcode() {:code=03, :name="in", :size=2}
-  ,04 -> new Opcode() {:code=04, :name="out", :size=2}
-  ,05 -> new Opcode() {:code=05, :name="jt", :size=3}
-  ,06 -> new Opcode() {:code=06, :name="jf", :size=3}
-  ,07 -> new Opcode() {:code=07, :name="tlt", :size=4}
-  ,08 -> new Opcode() {:code=08, :name="te", :size=4}
-  ,09 -> new Opcode() {:code=09, :name="arb", :size=2}
-  
-  ,99 -> new Opcode() {:code=99, :name="hlt", :size=1}
-  
-  /*
-  ,98 -> new Opcode() {:code=98, :name="nop", :size=1}
-  ,97 -> new Opcode() {:code=97, :name="srb", :size=2}
-  */
-}
-
 static class Instruction {
   var data : Long[]
   var location : int
   var value : long
-  var _opcode : Opcode
+  var _opcode : Intcode
   
   construct(program : Long[], offset : int) {
     data = program
@@ -41,24 +12,32 @@ static class Instruction {
     value = data[location]
   }
   
-  property get Opcode() : Opcode {
+  property get Opcode() : Intcode {
     if(_opcode == null) {
-      var code = (value % 100) as int
-      if(opcodes.containsKey(code)) {
-        _opcode = opcodes.get((value % 100) as int)
-      }
+      _opcode = Intcode.Intcodes.getOrDefault((value % 100) as int, null)
     }
     return _opcode
   }
   
   property get ParameterValues() : long[] {
-    var parameters = new long[Opcode.size]
-    for(i in 0..|Opcode.size-1) parameters[i] = data[location+i+1]
+    var parameters = new long[Opcode.instructionLength]
+    for(i in 0..|Opcode.instructionLength-1) parameters[i] = data[location+i+1]
     return parameters
   }
   
-  property get ParameterModes() : int[] {
-    return IntcodeComputer.getModes(value, Opcode.size - 1)
+  private function getModes(opcode : Intcode) : Integer[] {
+    var flags = value / 100
+    var modes = new ArrayList<Integer>()
+    while(flags > 0) {
+      var mode = (flags % 10) as int
+      modes.add(mode)
+      flags /= 10
+    }
+    return modes.toTypedArray()
+  }
+  
+  property get ParameterModes() : Integer[] {
+    return getModes(Opcode)
   }
   
   protected var modesForDisplay : Map<Integer,block(instruction:long):String> = {
@@ -74,7 +53,7 @@ static class Instruction {
       var args = ParameterValues
       var modes = ParameterModes
       return
-        String.format("[%05d] %s %s", {value, _opcode.name, (0..|Opcode.size-1).map(\i -> modesForDisplay[modes[i]](args[i])).join(" ")})
+        String.format("[%05d] %s %s", {value, _opcode.symbol, (0..|Opcode.instructionLength-1).map(\i -> modesForDisplay[modes[i]](args[i])).join(" ")})
         //"[${value}] ${_opcode.name} ${modesForDisplay()}"
         //"${_opcode.name} ${modesForDisplay()}"
     }
@@ -128,7 +107,7 @@ var entryPointsSeen = new HashSet<Integer>()
       var opcode = a_program[offset].Opcode
       if(opcode != null) {
         // locations jumped to must be (should be) the start of an executable section - add these to the pool
-        if((opcode.name == "jt") or (opcode.name == "jf")) {
+        if((opcode.symbol == "jt") or (opcode.symbol == "jf")) {
           var modes = a_program[offset].ParameterModes
           if(modes[1] == 0) { // positional jump // WARNING - may be inaccurate for self-modifying code
             //print("${offset}: ${a_program[offset]} add entry point ${a_program[a_program[offset+2].value as int].value}")
@@ -142,11 +121,11 @@ var entryPointsSeen = new HashSet<Integer>()
           // can't evaluate a relative jump without tracing the program
         }
     
-        if(opcode.name == "hlt") {
+        if(opcode.symbol == "hlt") {
           break
         }
     
-        offset += opcode.size
+        offset += opcode.instructionLength
       } else {
         offset += 1
       }
@@ -164,7 +143,7 @@ var buffer = new StringBuilder()
     buffer.append(next.toString())
     buffer.append(",")
     buffer.append("\n")
-    offset += next.Opcode != null ? next.Opcode.size : 1
+    offset += next.Opcode != null ? next.Opcode.instructionLength : 1
   }
 };
 

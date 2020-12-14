@@ -40,11 +40,53 @@ var arcade_program_data =
 
 var arcade_program = scratch.Util.csvLongs(arcade_program_data)
 
+static interface BreakoutPlayer {
+  function sensePaddle(x : int)
+  function senseBall(x : int)
+  function getCommand() : int
+}
+
+static class BreakoutRobot implements BreakoutPlayer {
+  var paddle_x : Integer
+  var ball_x : Integer
+  var delta : Integer
+  construct() {
+    paddle_x = null
+    ball_x = null
+    delta = null
+  }
+  override function sensePaddle(x : int) {
+    paddle_x = x
+    if(ball_x != null) delta = ball_x - paddle_x
+    print("paddle at x=${paddle_x}; delta=${delta}")
+  }
+  override function senseBall(x : int) {
+    ball_x = x
+    if(paddle_x != null) delta = ball_x - paddle_x
+    print("ball at x=${ball_x}; delta=${delta}")
+  }
+  override function getCommand() : int {
+    print("get input: ${paddle_x} --[${delta}]--> ${ball_x}")
+    if(delta != null and delta < 0) {
+      delta += 1 // assume the paddle moves each time we're asked
+      return -1
+    }
+    if(delta != null and delta > 0) {
+      delta -= 1
+      return +1
+    }
+    
+    return 0
+  }
+}
+
 static class ArcadeCabinet {
   var computer : IntcodeComputer
   var score : Long
   var display : RasterCloud
   var drawCount : int = 0
+  
+  var player : BreakoutPlayer
   
   private var input_x : Integer = null
   private var input_y : Integer = null
@@ -66,10 +108,10 @@ static class ArcadeCabinet {
         drawCount += 1
         
         if(value == 3) {
-          sensePaddle(input_x, input_y)
+          player.sensePaddle(input_x)
         }
         if(value == 4) {
-          senseBall(input_x, input_y)
+          player.senseBall(input_x)
         }
       
         input_x = null
@@ -81,54 +123,27 @@ static class ArcadeCabinet {
     return true
   }
   
-  var paddle_x : int
-  function sensePaddle(x : int, y : int) {
-    paddle_x = x
-    print("paddle ${paddle_x}")
-  }
-  var ball_x : int
-  function senseBall(x : int, y : int) {
-    ball_x = x
-    print("ball ${ball_x}")
-    
-    // crappy AI
-         if(ball_x < paddle_x) move(L)
-    else if(ball_x > paddle_x) move(R)
-    else                       move(null)
-    
-    if(y == 20) {
-      renderDisplay()
-      Thread.sleep(500)
-    }
-  }
-  
-  private var joystick : Direction = null
-  function move(stick : Direction) {
-    switch(stick) {
-      case L:
-      case R:
-      case null:
-        joystick = stick
-        break
-      default:
-        throw new IllegalArgumentException("can't move that way (${stick})")
-    }
-  }
-  private function provideInput() : Long {
-    switch(joystick) {
-      case L:  return -1
-      case R:  return  1
-      default: return  0
-    }
-  }
-  
   construct(program : Long[]) {
     computer = new IntcodeComputer()
     computer.load(program)
     computer.reset()
+    
+    player = new BreakoutRobot()
     // don't set up auto-input until after reset() because reset() tries to flush input
-    computer.ReadInputCallback = \-> provideInput()
-    computer.WriteOutputCallback = \value:long -> handleOutput(value as int)
+    
+    var inputCount = 0
+    var outputCount = 0
+    computer.ReadInputCallback = \-> {
+      //renderDisplay()
+      inputCount += 1
+      print("${inputCount} inputs read, t=${computer.Clock}")
+      return player.getCommand()
+    }
+    computer.WriteOutputCallback = \value:long -> {
+      outputCount += 1
+      //print("${outputCount} outputs written, t=${computer.Clock}") // noisy
+      return handleOutput(value as int)
+    }
 
     display = new RasterCloud()
   }
@@ -139,6 +154,11 @@ static class ArcadeCabinet {
   
   function run() {
     computer.run()
+    print("execution suspended")
+    print("halt ${computer.Halt}")
+    print("waiting for input ${computer.WaitingForInput}")
+    print("waiting for output ${computer.WaitingForOutput}")
+    print("error ${computer.Error}")
   }
   
   function renderDisplay() {
@@ -150,9 +170,12 @@ static class ArcadeCabinet {
 
 var gameRoom = new ArcadeCabinet(arcade_program)
 gameRoom.insertQuarters()
-//gameRoom.computer.writeInput(-1) // why are we ending so soon?
+//gameRoom.computer.writeInput(1) // why are we ending so soon?
+
 gameRoom.run()
 print("\n\tGAME OVER\n")
+gameRoom.renderDisplay()
+
 print("${gameRoom.computer.Clock} computer cycles elapsed")
 print("${gameRoom.drawCount} display operations")
 

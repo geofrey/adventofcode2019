@@ -20,7 +20,7 @@ class RasterCloud implements Map<Integer, RasterPoint> {
     var pixel : RasterPoint
     if(pixels.containsKey(hash)) {
       pixel = pixels.get(hash)
-      //print("draw onto existing pixel ${pixel}")
+      print("draw onto existing pixel ${pixel}")
     } else {
       pixel = new RasterPoint(x, y)
       pixels.put(hash, pixel)
