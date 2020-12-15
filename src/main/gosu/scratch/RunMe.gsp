@@ -1,10 +1,28 @@
-//scratch.intcode.IntcodeDisassembler.executeWithArgs({"-p", "109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99"})
-var legend = {
-  0 -> ".",
-  1 -> "#"
+for(sample in {
+  {},
+  {"one"},
+  {"two", "two"},
+  {"one", "two", "two"},
+  {"5", "5", "5", "5"},
+  {"5", "5", "5", "apple", "5", "5"}
+}) {
+  print(sample)
+  print(new RunLengthEncoder(sample.iterator()).toList())
+  print("")
 }
-var smallCloud = new RasterCloud()
-smallCloud.draw(0, 0, 1)
-print(smallCloud.render(legend))
-smallCloud.draw(0, 0, 0)
-print(smallCloud.render(legend))
+
+print("")
+var sequence = {"1"}
+print("start with: ${sequence}")
+for(n in 1..15) {
+  var nextSequence = new ArrayList<String>()
+  var encoded = new RunLengthEncoder(sequence.iterator()).toList()
+  print("${sequence} -> ${encoded}")
+  for(run in encoded) {
+    nextSequence.add(run.Second as String)
+    nextSequence.add(run.First)
+  }
+  sequence = nextSequence
+}
+print(sequence)
+

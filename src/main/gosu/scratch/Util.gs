@@ -91,17 +91,20 @@ class Util {
   
   static function condense<T>(items : List<T>) : List<Pair<T, Integer>> {
     var runs = new ArrayList<Pair<T, Integer>>()
-    var last : T = null
-    var count = 0
-    for(next in items) {
+    if(items.Empty) return runs
+    var src = items.iterator()
+    var last : T = src.next()
+    var count = 1
+    for(next in src) {
       if(next == last) {
         count += 1
-      } else if(count > 0) {
+      } else {
         runs.add(Pair.make(last, count))
         count = 1
       }
       last = next
     }
+    runs.add(Pair.make(last, count))
     return runs
   }
 }
