@@ -40,72 +40,36 @@ var arcade_program_data =
 
 var arcade_program = scratch.Util.csvLongs(arcade_program_data)
 
-static interface BreakoutPlayer {
+static interface IBreakoutPlayer {
   function sensePaddle(x : int)
   function senseBall(x : int)
   function getCommand() : int
-}
-
-static class BreakoutRobot implements BreakoutPlayer {
-  var paddle_x : Integer
-  var ball_x : Integer
-  var delta : Integer
-  construct() {
-    paddle_x = null
-    ball_x = null
-    delta = null
-  }
-  override function sensePaddle(x : int) {
-    paddle_x = x
-    if(ball_x != null) delta = ball_x - paddle_x
-    print("paddle at x=${paddle_x}; delta=${delta}")
-  }
-  override function senseBall(x : int) {
-    ball_x = x
-    if(paddle_x != null) delta = ball_x - paddle_x
-    print("ball at x=${ball_x}; delta=${delta}")
-  }
-  override function getCommand() : int {
-    print("get input: ${paddle_x} --[${delta}]--> ${ball_x}")
-    if(delta != null and delta < 0) {
-      delta += 1 // assume the paddle moves each time we're asked
-      return -1
-    }
-    if(delta != null and delta > 0) {
-      delta -= 1
-      return +1
-    }
-    
-    return 0
-  }
+  
+  function beginPlay(game : ArcadeCabinet)
 }
 
 static class ArcadeCabinet {
   var computer : IntcodeComputer
   var score : Long
   var display : RasterCloud
-  var drawCount : int = 0
   
-  var player : BreakoutPlayer
+  var player : IBreakoutPlayer
   
   private var input_x : Integer = null
   private var input_y : Integer = null
-  private var input_color : Integer = null
+  
   private function handleOutput(value : int) : boolean {
     if(input_x == null) {
       input_x = value
     } else if(input_y == null) {
       input_y = value
-    } else if(input_color == null) {
+    } else {
       if(input_x == -1 and input_y == 0) {
-        // update score
+        print("update score: ${value}")
         score = value
       } else {
         // draw something
-        input_color = value
-      
-        display.draw(input_x, input_y, input_color)
-        drawCount += 1
+        display.draw(input_x, input_y, value)
         
         if(value == 3) {
           player.sensePaddle(input_x)
@@ -113,38 +77,20 @@ static class ArcadeCabinet {
         if(value == 4) {
           player.senseBall(input_x)
         }
-      
-        input_x = null
-        input_y = null
-        input_color = null
       }
+      
+      input_x = null
+      input_y = null
     }
     
     return true
   }
   
+  var inputCount = 0
+  var outputCount = 0
   construct(program : Long[]) {
     computer = new IntcodeComputer()
     computer.load(program)
-    computer.reset()
-    
-    player = new BreakoutRobot()
-    // don't set up auto-input until after reset() because reset() tries to flush input
-    
-    var inputCount = 0
-    var outputCount = 0
-    computer.ReadInputCallback = \-> {
-      //renderDisplay()
-      inputCount += 1
-      print("${inputCount} inputs read, t=${computer.Clock}")
-      return player.getCommand()
-    }
-    computer.WriteOutputCallback = \value:long -> {
-      outputCount += 1
-      //print("${outputCount} outputs written, t=${computer.Clock}") // noisy
-      return handleOutput(value as int)
-    }
-
     display = new RasterCloud()
   }
   
@@ -152,9 +98,30 @@ static class ArcadeCabinet {
     computer.poke(0, 2)
   }
   
-  function run() {
+  function checkCredit() : long {
+    return computer.peek(0)
+  }
+  
+  function run(controller : IBreakoutPlayer) {
+    computer.reset()
+    player = controller
+    
+    computer.reset()
+    // don't set up auto-input until after reset() because reset() tries to flush input
+    computer.ReadInputCallback = \-> {
+      inputCount += 1
+      //print("${inputCount} inputs read, t=${computer.Clock}")
+      return player.getCommand()
+    }
+    computer.WriteOutputCallback = \value:long -> {
+      outputCount += 1
+      //print("${outputCount} outputs written, t=${computer.Clock}") // noisy
+      return handleOutput(value as int)
+    }
+    
+    player.beginPlay(this)
     computer.run()
-    print("execution suspended")
+
     print("halt ${computer.Halt}")
     print("waiting for input ${computer.WaitingForInput}")
     print("waiting for output ${computer.WaitingForOutput}")
@@ -163,29 +130,140 @@ static class ArcadeCabinet {
   
   function renderDisplay() {
     print("\tscore: ${score}")
+    var credit = checkCredit()
+    if(credit != 2) print("\tINSERT COIN")
     print(display.render(game_legend))
-    print("(${display.Count} screen tiles)")
+    //print("(${display.Count} screen tiles)")
+    //print("(${outputCount} display updates)")
   }
 }
 
-var gameRoom = new ArcadeCabinet(arcade_program)
-gameRoom.insertQuarters()
-//gameRoom.computer.writeInput(1) // why are we ending so soon?
+abstract static class BreakoutPlayer implements IBreakoutPlayer {
+  abstract override function sensePaddle(x : int)
+  abstract override function senseBall(x : int)
+  abstract override function getCommand() : int
+  
+  var cabinet : ArcadeCabinet as Cabinet
+  override function beginPlay(game : ArcadeCabinet) {
+    cabinet = game
+  }
+}
 
-gameRoom.run()
-print("\n\tGAME OVER\n")
-gameRoom.renderDisplay()
-
-print("${gameRoom.computer.Clock} computer cycles elapsed")
-print("${gameRoom.drawCount} display operations")
-
-;{
-    var categories = gameRoom.display.Values.toList().partition(\pixel -> pixel.value)
-    for(category in game_legend_names.entrySet().orderBy(\es -> es.Key)) {
-      var value = category.Key // um...
-      var name = category.Value
-      var symbol = game_legend[value]
-      var count = categories.containsKey(value) ? categories[value].Count : 0
-      print("${name} (${symbol}): ${count}")
+static class BreakoutRobot extends BreakoutPlayer {
+  var paddle_x : Integer
+  var ball_x : Integer
+  var last_display : long
+  construct() {
+    paddle_x = null
+    ball_x = null
+  }
+  override function sensePaddle(x : int) {
+    if(x != paddle_x) {
+      print("paddle at x=${paddle_x}")
     }
-};
+    paddle_x = x
+  }
+  override function senseBall(x : int) {
+    if(x != ball_x) {
+      print("ball at x=${ball_x}")
+      var now = System.currentTimeMillis()
+      if(now > last_display + 10000) {
+        last_display = now
+        cabinet.renderDisplay()
+        java.lang.Thread.sleep(1000)
+      }
+    }
+    ball_x = x
+  }
+  override function getCommand() : int {
+    var stick : int
+    if(paddle_x == ball_x) stick = 0
+    else if(paddle_x < ball_x) stick = 1
+    else stick = -1
+    
+    print("get input: ${paddle_x} --[${stick}]--> ${ball_x}")
+    return stick
+  }
+}
+
+static class ConsoleInputReader extends BreakoutPlayer {
+  override function sensePaddle(x : int) {
+    print("paddle seen at ${x}")
+  }
+  
+  override function senseBall(x : int) {
+    print("ball seen at ${x}")
+  }
+  
+  override function getCommand() : int {
+    cabinet.renderDisplay()
+    
+    print("joystick please, 1/2/3")
+    var line = new java.io.BufferedReader(new java.io.InputStreamReader(System.in)).readLine().trim()
+    if(line.contains("!")) cabinet.insertQuarters()
+    
+    return {
+      "1" -> -1,
+      "2" ->  0,
+      "3" ->  1
+    }.getOrDefault(line, 0)
+  }
+}
+
+static class BreakoutTAS extends BreakoutPlayer {
+  var inputData : Iterable<Direction>
+  var inputSequence : Iterator<Direction>
+  
+  construct(input : Iterable<Direction>) {
+    inputData = input
+  }
+  
+  override function beginPlay(game : ArcadeCabinet) {
+    super.beginPlay(game)
+    inputSequence = inputData.iterator()
+  }
+    
+  override function sensePaddle(x : int) {
+    // don't care, we're recorded
+  }
+  
+  override function senseBall(x : int) {
+    // meh
+  }
+  
+  override function getCommand() : int {
+    Cabinet.renderDisplay()
+    
+    var stick : Direction = null
+    if(inputSequence.hasNext()) stick = inputSequence.next()
+    var output = {
+      Direction.L -> -1,
+      Direction.R ->  1
+    }.getOrDefault(stick, 0)
+    print("BreakoutTAS replay ${output}")
+    return output
+  }
+}
+
+var player =
+  new BreakoutRobot()
+  //new ConsoleInputReader()
+  //new BreakoutTAS({L, L, L, L, L, L, L, L, L, L, L})
+
+var gameRoom = new ArcadeCabinet(arcade_program)
+
+//;{ // count blocks for Day 1 answer
+//    var categories = gameRoom.display.Values.toList().partition(\pixel -> pixel.value)
+//    for(category in game_legend_names.entrySet().orderBy(\es -> es.Key)) {
+//      var value = category.Key // um...
+//      var name = category.Value
+//      var symbol = game_legend[value]
+//      var count = categories.containsKey(value) ? categories[value].Count : 0
+//      print("${name} (${symbol}): ${count}")
+//    }
+//};
+
+// day 2 : play the game
+gameRoom.insertQuarters()
+gameRoom.run(player)
+gameRoom.renderDisplay() // one last time to make sure we find out the final score
