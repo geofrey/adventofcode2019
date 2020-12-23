@@ -28,13 +28,16 @@ class Util {
     return permutation
   }
   
-  static function getPuzzleInput(fileName : String) : String {
+  static function getPuzzleInputFile(fileName : String) : File {
     var folder = new File(
       System.Properties.getProperty("user.dir"), // this is no good when debugging; user.dir gets set differently
       "src/main/gosu/days"
     )
     var inputFile = new File(folder, fileName)
-    return inputFile.read()
+    return inputFile
+  }
+  static function getPuzzleInput(fileName : String) : String {
+    return getPuzzleInputFile(fileName).read()
   }
   
   static function csvLongs(line : String) : Long[] {
